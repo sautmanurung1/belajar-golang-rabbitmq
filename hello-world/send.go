@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -26,8 +28,11 @@ func main() {
 	if err != nil {
 		panic(errors.Wrap(err, "Failed to get the queue : "))
 	}
-	
-	err = ch.Publish("", q.Name, false, false, amqp091.Publishing{
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = ch.PublishWithContext(ctx, "", q.Name, false, false, amqp091.Publishing{
 		ContentType: "text/plain",
 		Body:        []byte(os.Args[1]),
 	})
